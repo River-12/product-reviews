@@ -1,7 +1,7 @@
 
 # Riverstone Product Reviews for Magento 2
 
-## How to install & upgrade Riverstone_InfiniteScroll
+## How to install & upgrade Riverstone_ProductReviews
 
 ### 1. Install via composer (recommend)
 
