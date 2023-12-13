@@ -1,0 +1,192 @@
+<?php
+/** @var $block Template */
+
+use Magento\Framework\App\ObjectManager;
+use Magento\Framework\View\Element\Template;
+
+?>
+<?php
+$_items = $block->getReviewsCollection()->getItems();
+$format = $block->getDateFormat() ?: IntlDateFormatter::SHORT;
+
+
+$_objectManager = ObjectManager::getInstance();
+$mediaDirectoryPath = $block->getUrl('media/river/review_images');
+
+?>
+<?php if (count($_items)): ?>
+    <div class="block review-list" id="customer-reviews">
+        <div class="block-title">
+            <strong><?= /* @noEscape */
+                __('Customer Reviews') ?></strong>
+        </div>
+        <div class="block-content">
+            <div class="toolbar review-toolbar">
+                <?= $block->getChildHtml('toolbar') ?>
+            </div>
+            <ol class="items review-items">
+                <?php foreach ($_items as $_review): ?>
+                    <li class="item review-item" itemscope itemprop="review" itemtype="http://schema.org/Review">
+                        <div class="review-title"
+                             itemprop="name"><?= $escaper->escapeHtml($_review->getTitle()) ?>
+                        </div>
+                        <?php if (count($_review->getRatingVotes())): ?>
+                            <div class="review-ratings">
+                                <?php foreach ($_review->getRatingVotes() as $_vote): ?>
+                                    <div class="rating-summary item" itemprop="reviewRating" itemscope
+                                         itemtype="http://schema.org/Rating">
+                                        <span class="label rating-label">
+                                            <span><?= $escaper->escapeHtml($_vote->getRatingCode()) ?></span>
+                                        </span>
+                                        <div class="rating-result" title="<?= /* @noEscape */
+                                        $_vote->getPercent() ?>%">
+                                            <meta itemprop="worstRating" content="1"/>
+                                            <meta itemprop="bestRating" content="100"/>
+                                            <span style="width:<?= /* @noEscape */
+                                            $_vote->getPercent() ?>%">
+                                                <span itemprop="ratingValue"><?= /* @noEscape */
+                                                    $_vote->getPercent() ?>%</span>
+                                            </span>
+                                        </div>
+                                    </div>
+                                <?php endforeach; ?>
+                            </div>
+                        <?php endif; ?>
+                        <div class="review-content" itemprop="description">
+                            <?= /* @noEscape */
+                            nl2br($escaper->escapeHtml($_review->getDetail())) ?>
+                        </div>
+                        <div class="review-details">
+                            <p class="review-author">
+                                <span class="review-details-label"><?= /* @noEscape */
+                                    __('Review by') ?></span>
+                                <strong class="review-details-value"
+                                        itemprop="author"><?= $escaper->escapeHtml($_review->getNickname()) ?></strong>
+                            </p>
+                            <p class="review-date">
+                                <span class="review-details-label"><?= /* @noEscape */
+                                    __('Posted on') ?></span>
+                                <time class="review-details-value" itemprop="datePublished" datetime="<?= /* @noEscape */ // phpcs:ignore
+                                    $block->formatDate($_review->getCreatedAt(), $format) ?>">
+                                    <?= /* @noEscape */$block->formatDate($_review->getCreatedAt(), $format) ?>
+                                </time>
+                            </p>
+                        </div>
+
+                        <div class="review-attachments">
+                            <p class="review-attachments-label">Attachments</p>
+                            <div class="review-media-value">
+                                <?php
+                                $thisReviewMediaCollection = $_objectManager->get('\Riverstone\ProductReviews\Model\ReviewManagementFactory') // phpcs:ignore
+                                    ->create()->getCollection()->addFieldToFilter('review_id', $_review->getReviewId());
+                                if (count($thisReviewMediaCollection)) {
+                                    foreach ($thisReviewMediaCollection as $m) {
+                                        $imagePaths = explode(',', $m->getImage()); // Split comma-separated image paths
+                                        foreach ($imagePaths as $imagePath) {
+                                            $fullImagePath = rtrim($mediaDirectoryPath, '/') . $imagePath;
+                                            ?>
+                                            <div class="image item base-image" data-role="image">
+                                                <div class="product-image-wrapper">
+                                                    <img class="product-image" data-role="image-element"
+                                                         src="<?= /* @noEscape */$fullImagePath; ?>" alt="Image">
+                                                </div>
+                                            </div>
+                                            <?php
+                                        }
+                                    }
+                                } else {
+                                    /* @noEscape */
+                                    echo __('No attachment available.');
+                                }
+                                ?>
+                            </div>
+                        </div>
+                    </li>
+                <?php endforeach; ?>
+            </ol>
+
+            <div id="review-image-modal" style="display:none;">
+                <img id="review-image-lg" src=""/>
+            </div>
+
+            <script>
+                require(
+                    [
+                        'jquery',
+                        'Magento_Ui/js/modal/modal'
+                    ],
+                    function ($, modal) {
+                        var images = []; // Array to store image URLs
+                        var currentIndex = 0; // Current image index
+                        var modalInstance = null; // Variable to store the modal instance
+
+                        // Populate the images array with URLs of images
+                        $('.product-image').each(function () {
+                            images.push($(this).attr('src'));
+                        });
+
+                        // Function to show the image at a specific index
+                        function showImage(index) {
+                            $('#review-image-lg').attr('src', images[index]);
+                        }
+
+                        // Create modal instance
+                        modalInstance = $("#review-image-modal").modal({
+                            type: 'popup',
+                            clickableOverlay: true,
+                            responsive: true,
+                            buttons: []
+                        });
+
+                        // Open modal and display the clicked image
+                        $(".product-image").on('click', function () {
+                            currentIndex = images.indexOf($(this).attr('src'));
+                            showImage(currentIndex);
+                            modalInstance.modal('openModal').css({"text-align": "center"});
+                        });
+
+                        // Append next and previous arrow icons to the modal
+                        $('#review-image-modal').append('<div id="prev-arrow" class="arrow"><</div>');
+                        $('#review-image-modal').append('<div id="next-arrow" class="arrow">></div');
+
+                        // Add click handlers for the arrow icons
+                        $("#next-arrow").on('click', function () {
+                            currentIndex = (currentIndex + 1) % images.length;
+                            showImage(currentIndex);
+                        });
+
+                        $("#prev-arrow").on('click', function () {
+                            currentIndex = (currentIndex - 1 + images.length) % images.length;
+                            showImage(currentIndex);
+                        });
+                    }
+                );
+            </script>
+
+            <div class="toolbar review-toolbar">
+                <?= $block->getChildHtml('toolbar') ?>
+            </div>
+        </div>
+    </div>
+<?php endif; ?>
+
+
+<style>
+    .arrow {
+        position: absolute;
+        top: 50%;
+        transform: translateY(-50%);
+        font-size: 24px;
+        cursor: pointer;
+        color: #000; /* Arrow color */
+    }
+
+    #prev-arrow {
+        left: 10px;
+    }
+
+    #next-arrow {
+        right: 10px;
+    }
+
+</style>

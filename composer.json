@@ -1,0 +1,28 @@
+{
+    "name": "riverstone/product-reviews",
+    "version": "1.0.0",
+    "description": "Product Reviews Extension allows the customers can upload their original images to the stores",
+    "type": "magento2-module",
+    "minimum-stability": "stable",
+    "require": {
+        "magento/framework": "102.*|103.*",
+        "magento/module-backend": "101.*|102.*"
+    },
+    "authors": [
+        {
+            "name": "Riverstone Technology Unlimited",
+            "email": "support@riverstonetech.com",
+            "homepage": "https://www.riverstonetech.com",
+            "role": "Technical Support"
+        }
+    ],
+    "license": "MIT",
+    "autoload": {
+        "files": [
+            "registration.php"
+        ],
+        "psr-4": {
+            "Riverstone\\ProductReviews\\": ""
+        }
+    }
+}

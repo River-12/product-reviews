@@ -1,0 +1,140 @@
+<?php
+/** @var $block \Magento\Framework\View\Element\Template */
+?>
+<?php if (count($block->getMediaCollection())): ?>
+    <div class="review-attachments">
+        <div class="review-media-value">
+            <?php
+            foreach ($block->getMediaCollection() as $m) {
+                $imagePaths = explode(',', $m->getImage());
+                foreach ($imagePaths as $imagePath) {
+                    $path = $block->getReviewMediaUrl() . $imagePath;
+                    ?>
+                    <div class="image item base-image" data-role="image">
+                        <div class="product-image-wrapper">
+                            <img class="product-image" data-role="image-element"
+                                 src="<?= /* @noEscape */ $path; ?>" alt="Image">
+                            <div class="actions">
+                                <button type="button" class="action-remove"
+                                        data-media-id="<?= /* @noEscape */ $m->getId(); ?>"
+                                        data-role="delete-button" title="Delete image">
+                                    <span>Delete image</span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    <?php
+                }
+            }
+            ?>
+        </div>
+    </div>
+<?php else: ?>
+    <?= $escaper->escapeHtml(__("No attachment available.")) ?>
+<?php endif; ?>
+
+
+<div id="review-image-modal" style="display:none;">
+    <img id="review-image-lg" src=""/>
+</div>
+
+<script>
+    require(
+        [
+            'jquery',
+            'Magento_Ui/js/modal/modal'
+        ],
+        function ($) {
+            console.log('Script loaded');
+
+
+            $('.action-remove').on('click', function (e) {
+                var imageRemove=$(this);
+                var mediaId = $(this).data('media-id');
+                var imagePath = $(this).closest('.product-image-wrapper').find('.product-image').attr('src');
+                var basePath = 'http://lh-magento246.com/media/river/review_images';
+
+                if (imagePath.startsWith(basePath)) {
+                    var relativeImagePath = imagePath.substring(basePath.length);
+                    $.ajax({
+                        url: 'http://lh-magento246.com/reviewmanagement/product/image',
+                        type: 'POST',
+                        dataType: 'json',
+                        cache: false,
+                        showLoader: true,
+                        data: { 'media_id': mediaId, 'image_path': relativeImagePath },
+                        success: function (response) {
+                            if (response.success) {
+                                $(e.target).parent().parent().parent().remove();
+                            } else {
+                                console.error('Failed to delete image: ' + response.error);
+                            }
+                        },
+                        error: function (xhr, status, error) {
+                            console.error('AJAX error:', error);
+                        }
+                    });
+                }
+            });
+
+            var images = []; // Array to store image URLs
+            var currentIndex = 0; // Current image index
+            var modalInstance = null; // Variable to store the modal instance
+
+            // Populate the images array with URLs of images
+            $('.product-image').each(function () {
+                images.push($(this).attr('src'));
+            });
+
+            // Function to show the image at a specific index
+            function showImage(index) {
+                $('#review-image-lg').attr('src', images[index]);
+            }
+
+               $(".product-image").on('click', function () {
+
+                $("#review-image-modal").html("");
+                $("#review-image-modal").prepend('<img id="review-image-lg" src="' + $(this).attr("src") + '"/>');
+
+                $("#review-image-modal").modal({
+                    type: 'popup',
+                    title: 'Review Image',
+                    clickableOverlay: true,
+                    buttons:[],
+                    responsive: true
+                }).modal('openModal').css({"text-align":"center"});
+
+                   $('#review-image-modal').append('<div id="prev-arrow" class="arrow"><</div>');
+                   $('#review-image-modal').append('<div id="next-arrow" class="arrow">></div');
+
+                   // Add click handlers for the arrow icons
+                   $("#next-arrow").on('click', function () {
+                       currentIndex = (currentIndex + 1) % images.length;
+                       showImage(currentIndex);
+                   });
+
+                   $("#prev-arrow").on('click', function () {
+                       currentIndex = (currentIndex - 1 + images.length) % images.length;
+                       showImage(currentIndex);
+                   });
+            });
+
+     F   })
+</script>
+
+<style>
+    .arrow {
+        position: absolute;
+        top: 50%;
+        transform: translateY(-50%);
+        font-size: 24px;
+        cursor: pointer;
+        color: #000; /* Arrow color */
+    }
+    #prev-arrow {
+        left: 10px;
+    }
+    #next-arrow {
+        right: 10px;
+    }
+</style>
