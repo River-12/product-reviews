@@ -2,7 +2,7 @@
 
 namespace Riverstone\ProductReviews\Model\Adminhtml\System\Config\Source\Customer;
 
-use Magento\Customer\Model\ResourceModel\Group\CollectionFactory as customerFactory;
+use Magento\Customer\Model\ResourceModel\Group\CollectionFactory;
 use Magento\Framework\Option\ArrayInterface;
 
 class Group implements ArrayInterface
@@ -11,13 +11,13 @@ class Group implements ArrayInterface
      * phpcs:disable
      */
     protected $_options;
-    
+
     protected $groupCollectionFactory;
 
     /**
      * @param CollectionFactory $groupCollectionFactory
      */
-    public function __construct(customerFactory $groupCollectionFactory)
+    public function __construct(CollectionFactory $groupCollectionFactory)
     {
         $this->groupCollectionFactory = $groupCollectionFactory;
     }

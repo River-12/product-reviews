@@ -1,0 +1,38 @@
+<?php
+$reviewId = $block->getRequest()->getParam('id');
+$mediaCollection = $block->getMediaCollection();
+$mediaUrl = $block->getReviewMediaUrl();
+?>
+<?php if ($mediaCollection && $mediaCollection->getSize()): ?>
+    <div class="review-images">
+        <h3><?= __('Uploaded Images') ?></h3>
+        <?php
+        foreach ($block->getMediaCollection() as $m) {
+            $imagePaths = explode(',', $m->getImage());
+            foreach ($imagePaths as $imagePath) {
+                $path = $block->getReviewMediaUrl()  . $imagePath; // Ensure there is a '/' between the base URL and the image path
+                ?>
+                <div class="image item base-image" data-role="image">
+                    <div class="product-image-wrapper">
+                        <img class="product-image" data-role="image-element"
+                             src="<?= /* @noEscape */ $block->escapeUrl($path); ?>" alt="Image">
+                    </div>
+                </div>
+                <?php
+            }
+        }
+        ?>
+    </div>
+<?php endif; ?>
+
+<style>
+    img.product-image {
+    width: 300px;
+    height: 200px;
+}
+
+.product-image-wrapper {
+    height: 200px;
+}
+
+</style>

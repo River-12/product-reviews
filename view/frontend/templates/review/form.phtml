@@ -2,39 +2,38 @@
 // @codingStandardsIgnoreFile
 
 /** @var \Magento\Review\Block\Form $block */
-
 /** @var Riverstone\ProductReviews\ViewModel\Customer $block */
 
 $viewModel = $block->getData('viewModel');
-$customerId=$viewModel->getCustomerId();
-$customerGroup=$viewModel->getCustomerGroupId();
-
+$customerId = $viewModel->getCustomerId();
+$customerGroup = $viewModel->getCustomerGroupId();
 ?>
 <div class="block review-add">
-    <div class="block-title"><strong><?= $block->escapeHtml(__('Write Your Own Review')) ?></strong></div>
+    <div class="block-title">
+        <strong><?= $block->escapeHtml(__('Write Your Own Review')) ?></strong>
+    </div>
     <div class="block-content">
         <?php if ($block->getAllowWriteReviewFlag()): ?>
             <?php
             $helper = $this->helper('Riverstone\ProductReviews\Helper\Data');
-            $allowedCustomer=$helper->isCustomerGroups();
+            $allowedCustomer = $helper->isCustomerGroups() ?: '';
 
-            if (in_array($customerGroup, explode(',', $allowedCustomer)) && $helper->isEnabled()) {
-
-            if(($helper->isPurchased()) && (!$helper->checkPurchasedProduct($block->getProductInfo()->getId()))){
-            ?>
-            <div class="block review-add">
-                <div class="block-content">
-                    <div class="message info notlogged" id="review-form">
-                        <div>
-                            <?php echo __('Only purchased product can write reviews. Please make A verified purchase from store') ?>
+            if ($helper->isEnabled()) {
+                if (in_array($customerGroup, explode(',', $allowedCustomer))) {
+                    if ($helper->isPurchased() && !$helper->checkPurchasedProduct($block->getProductInfo()->getId())) {
+                        ?>
+                        <div class="block review-add">
+                            <div class="block-content">
+                                <div class="message info notlogged" id="review-form">
+                                    <div>
+                                        <?php echo __('Only purchased products can write reviews. Please make a verified purchase from the store.'); ?>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
-                    </div>
-                </div>
-            </div>
-        <?php
-        }else{
-        ?>
-            <form enctype="multipart/form-data" action="<?php /* @escapeNotVerified */ echo $block->getAction() ?>" class="review-form" method="post" id="review-form" data-role="product-review-form" data-bind="scope: 'review-form'">
+                    <?php } else { ?>
+                <form enctype="multipart/form-data" action="<?php /* @escapeNotVerified */ echo $block->getAction() ?>" class="review-form" method="post" id="review-form" data-role="product-review-form" data-bind="scope: 'review-form'">
+                <input name="form_key" type="hidden" value="<?= $block->getFormKey(); ?>" />
                 <?php echo $block->getBlockHtml('formkey'); ?>
                 <?php echo $block->getChildHtml('form_fields_before') ?>
                 <fieldset class="fieldset review-fieldset" data-hasrequired="<?php __('* Required Fields'); ?>">
@@ -104,43 +103,45 @@ $customerGroup=$viewModel->getCustomerGroupId();
                             <?php /* @escapeNotVerified */ echo __('You can select maximum 10 images.') ?>
                         </div>
                     </div>
-<!--                    <div class="row">-->
-<!--                        <div class="col-md-4">-->
-<!--                            <input type="file" class="d-none" id="addVideosInput" accept=" video/*">-->
-<!--                        </div>-->
-<!--                    </div>-->
+                    <div class="field review-field-video">
+                        <label class="label"><span><?php /* @escapeNotVerified */ echo __('Upload Video (mp4, avi, mov)') ?></span></label>
+                        <div class="control">
+                            <input type="file" id="addVideosInput" name="video_file" accept="video/*">
+                        </div>
+                    </div>
 
                 </fieldset>
-                <div class="actions-toolbar review-form-actions">
-                    <div class="primary actions-primary">
-                        <button type="submit" class="action submit primary"><span><?php /* @escapeNotVerified */ echo __('Submit Review') ?></span></button>
-                    </div>
-                </div>
-            </form>
-            <script type="text/x-magento-init">
-                {
-                    "[data-role=product-review-form]": {
-                        "Magento_Ui/js/core/app": <?= /* @noEscape */ $block->getJsLayout() ?>
-                },
-                "#review-form": {
-                    "Magento_Review/js/error-placement": {},
-                    "Magento_Review/js/validate-review": {}
-                }
-            }
-            </script>
+                        <div class="actions-toolbar review-form-actions">
+                            <div class="primary actions-primary">
+                                <button type="submit" class="action submit primary"><span><?php /* @escapeNotVerified */ echo __('Submit Review') ?></span></button>
+                            </div>
+                        </div>
+                    </form>
+                    <script type="text/x-magento-init">
+                        {
+                            "[data-role=product-review-form]": {
+                                "Magento_Ui/js/core/app": <?= /* @noEscape */ $block->getJsLayout() ?>
+                        },
+                        "#review-form": {
+                            "Magento_Review/js/error-placement": {},
+                            "Magento_Review/js/validate-review": {}
+                        }
+                    }
+                    </script>
                 <?php
-            }
-            } else {
-                echo __('You are not allowed to write reviews or the review form is not enabled for your customer group.');
+                    }
+                } else {
+                    echo __('You are not allowed to write reviews or the review form is not enabled for your customer group.');
+                }
             }
             ?>
         <?php else: ?>
             <div class="message info notlogged" id="review-form">
                 <div>
-                    <?= $block->escapeHtml(__('Only registered users can write reviews. Please <a href="%1">Sign in</a> or <a href="%2">create an account</a>', $block->getLoginLink(), $block->getRegisterUrl()), ['a']) ?>
+                    <?= $block->escapeHtml(__('Only registered users can write reviews. Please <a href="%1">Sign in</a> or <a href="%2">create an account</a>', $block->getLoginLink(), $block->getRegisterUrl()), ['a']); ?>
                 </div>
             </div>
-        <?php endif ?>
+        <?php endif; ?>
     </div>
 </div>
 

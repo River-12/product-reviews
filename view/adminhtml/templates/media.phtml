@@ -37,6 +37,9 @@
 <div id="review-image-modal" style="display:none;">
     <img id="review-image-lg" src=""/>
 </div>
+<?php
+    $ajaxUrl = $escaper->escapeUrl($block->getUrl('reviewmanagement/product/image'));
+?>
 
 <script>
     require(
@@ -46,18 +49,17 @@
         ],
         function ($) {
             console.log('Script loaded');
-
-
             $('.action-remove').on('click', function (e) {
                 var imageRemove=$(this);
                 var mediaId = $(this).data('media-id');
                 var imagePath = $(this).closest('.product-image-wrapper').find('.product-image').attr('src');
-                var basePath = 'http://lh-magento246.com/media/river/review_images';
+                var basePath = <?= $escaper->escapeUrl($block->getUrl('media/river/review_images')); ?>;
+                var ajaxUrl = "<?= $escaper->escapeUrl($block->getUrl('reviewmanagement/product/image')); ?>";
 
                 if (imagePath.startsWith(basePath)) {
                     var relativeImagePath = imagePath.substring(basePath.length);
                     $.ajax({
-                        url: 'http://lh-magento246.com/reviewmanagement/product/image',
+                        url: $ajaxUrl,
                         type: 'POST',
                         dataType: 'json',
                         cache: false,
